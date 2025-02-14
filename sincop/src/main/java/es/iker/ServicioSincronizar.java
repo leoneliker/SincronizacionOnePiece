@@ -1,11 +1,23 @@
 package es.iker;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+/**
+ * Servicio para sincronizar nombres y tiempos de archivos de subtítulos.
+ */
 public class ServicioSincronizar {
     private String ruta;
     private Double rangoTiempo;
-    
+
     public String getRuta() {
         return ruta;
     }
@@ -27,6 +39,12 @@ public class ServicioSincronizar {
         this.rangoTiempo = rangoTiempo;
     }
 
+    /**
+     * Sincroniza los nombres de los archivos MKV y ASS en el directorio
+     * especificado.
+     * 
+     * @param ruta La ruta del directorio.
+     */
     public void sincronizarNombres(String ruta) {
         File directorio = new File(ruta);
         File[] archivosMKV = directorio.listFiles((dir, nombre) -> nombre.endsWith(".mkv"));
@@ -52,23 +70,62 @@ public class ServicioSincronizar {
         }
     }
 
+    /**
+     * Sincroniza los tiempos de los subtítulos en los archivos ASS en el directorio
+     * especificado.
+     * 
+     * @param ruta        La ruta del directorio.
+     * @param rangoTiempo El rango de tiempo para la sincronización.
+     */
     public void sincronizarTiempos(String ruta, Double rangoTiempo) {
-        // BufferedReader br = null;
-        // File directorio = new File(ruta);
-        // File[] archivosASS = directorio.listFiles((dir, nombre) -> nombre.endsWith(".ass"));
-        // for (File archivoASS : archivosASS) {
-        //     try {
-        //         br = new BufferedReader(new FileReader(archivoASS.getAbsolutePath()));
-        //         String texto = br.readLine();
-        //         while (texto != null) {
-        //             System.out.println(texto);
-        //             texto = br.readLine();
-        //         }
-        //     } catch (FileNotFoundException e) {
-        //         e.printStackTrace();
-        //     } catch (IOException e) {
-        //         e.printStackTrace();
-        //     }
-        // }
+        BufferedReader br = null;
+        BufferedWriter bw = null;
+        File directorio = new File(ruta);
+        File[] archivosASS = directorio.listFiles((dir, nombre) -> nombre.endsWith(".ass"));
+        SimpleDateFormat sdf = new SimpleDateFormat("H:mm:ss.SS");
+        for (File archivoASS : archivosASS) {
+            try {
+                br = new BufferedReader(new FileReader(archivoASS.getAbsolutePath()));
+                StringBuilder contenidoModificado = new StringBuilder();
+                String texto = br.readLine();
+                while (texto != null) {
+                    if (texto.startsWith("Dialogue: ")) {
+                        String[] partes = texto.split(",");
+                        try {
+                            Date startTime = sdf.parse(partes[1]);
+                            Date endTime = sdf.parse(partes[2]);
+                            long startMillis = startTime.getTime() - (long) (rangoTiempo * 1000);
+                            long endMillis = endTime.getTime() - (long) (rangoTiempo * 1000);
+                            partes[1] = sdf.format(new Date(startMillis));
+                            partes[2] = sdf.format(new Date(endMillis));
+                            texto = String.join(",", partes);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    contenidoModificado.append(texto).append("\n");
+                    texto = br.readLine();
+                }
+                br.close();
+                bw = new BufferedWriter(new FileWriter(archivoASS.getAbsolutePath()));
+                bw.write(contenidoModificado.toString());
+                bw.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (br != null) {
+                        br.close();
+                    }
+                    if (bw != null) {
+                        bw.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
