@@ -14,6 +14,11 @@ No me hago responsable de la procedencia de los archivos de subtítulos y videos
 ## Limitaciones
 Este proyecto está diseñado para funcionar específicamente con archivos de subtítulos `.ass` y archivos de video `.mkv` debido a las necesidades del reproductor VLC. Sin embargo, puede ser compatible con otras extensiones de subtítulos y videos con modificaciones menores en el código.
 
+La parte de la traduccion depende exclusivamente de la capacidad integra de DeepL, respecto a la estructura, esta diseñado para el formato de nombres de los archivos propios.
+
+> [!CAUTION]
+> Es aconsejable revisar el método de "substring" y el formato de nombre para cada caso específico, ya que pueden variar dependiendo de los archivos de subtítulos y videos utilizados.
+
 Este proyecto se llama **Sincronizacion One Piece** porque ha sido testeado únicamente con los archivos de los capítulos del anime de One Piece que yo he utilizado. Para otros casos, es probable que funcione, pero puede ser necesario modificar el código.
 
 ## Contribuciones

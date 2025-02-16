@@ -45,7 +45,7 @@ public class ServicioSincronizar {
      * 
      * @param ruta La ruta del directorio.
      */
-    public void sincronizarNombres(String ruta) {
+    public void sincronizarNombres() {
         File directorio = new File(ruta);
         File[] archivosMKV = directorio.listFiles((dir, nombre) -> nombre.endsWith(".mkv"));
         File[] archivosASS = directorio.listFiles((dir, nombre) -> nombre.endsWith(".ass"));
@@ -77,7 +77,7 @@ public class ServicioSincronizar {
      * @param ruta        La ruta del directorio.
      * @param rangoTiempo El rango de tiempo para la sincronización.
      */
-    public void sincronizarTiempos(String ruta, Double rangoTiempo) {
+    public void sincronizarTiempos() {
         BufferedReader br = null;
         BufferedWriter bw = null;
         File directorio = new File(ruta);
