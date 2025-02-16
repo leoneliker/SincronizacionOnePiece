@@ -1,27 +1,54 @@
 package es.iker;
 
-import es.iker.servicios.ServicioSincronizar;
-import es.iker.servicios.ServicioTraducir;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import es.iker.servicios.ServicioSincronizar;
+import es.iker.servicios.ServicioTraducir;
 
 public class App {
-    /**
-     * Método principal que inicia la aplicación.
-     * Comentar los servicios que no se vayan a utilizar.
-     * 
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
-        // Ajustar rutas según necesidad
         List<String> rutas = Arrays.asList("");
-        // Ajustar rango de tiempo según necesidad
         Double rangoTiempo = 14.0;
+        BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+        Thread traducirThread = new Thread(() -> {
+            try {
+                for (String ruta : rutas) {
+                    ServicioTraducir servicioTraducir = new ServicioTraducir(Arrays.asList(ruta));
+                    servicioTraducir.traducir();
+                    System.out.println("Traducción completada para la carpeta: " + ruta);
+                    queue.put(ruta); 
+                }
+                queue.put("FIN"); 
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
-        ServicioTraducir servicioTraducir = new ServicioTraducir(rutas);
-        servicioTraducir.traducir();
-        ServicioSincronizar servicioSincronizar = new ServicioSincronizar(rutas, rangoTiempo);
-        servicioSincronizar.sincronizarNombres();
-        servicioSincronizar.sincronizarTiempos();
+        Thread sincronizarThread = new Thread(() -> {
+            try {
+                while (true) {
+                    String ruta = queue.take();
+                    if (ruta.equals("FIN")) {
+                        break;
+                    }
+                    System.out.println("Iniciando sincronización para la carpeta: " + ruta);
+                    ServicioSincronizar servicioSincronizar = new ServicioSincronizar(Arrays.asList(ruta), rangoTiempo);
+                    servicioSincronizar.sincronizarNombres();
+                    servicioSincronizar.sincronizarTiempos();
+                    System.out.println("Sincronización completada para la carpeta: " + ruta);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        traducirThread.start();
+        sincronizarThread.start();
+
+        traducirThread.join();
+        sincronizarThread.join();
     }
 }

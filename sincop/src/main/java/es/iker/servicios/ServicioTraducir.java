@@ -36,11 +36,12 @@ public class ServicioTraducir {
             File directorio = new File(ruta);
             File[] archivosMKV = directorio.listFiles((dir, nombre) -> nombre.endsWith(".mkv"));
             for (File archivoMKV : archivosMKV) {
+                System.out.println("Traduciendo...");
                 String nombreArchivo = archivoMKV.getName();
                 String titulo = nombreArchivo.substring(nombreArchivo.indexOf("-") + 2, nombreArchivo.lastIndexOf("-"))
                         .trim();
                 titulo = titulo.replaceAll("\\d+ - ", "").replaceAll("\\[.*\\]", "").trim();
-                TextResult result = client.translateText(titulo, "en", "es");
+                TextResult result = client.translateText(titulo, "es", "es");
                 String tituloTraducido = result.getText();
                 String nuevoNombreArchivo = nombreArchivo.replace(titulo, tituloTraducido);
                 nuevoNombreArchivo = nuevoNombreArchivo.replaceAll("\\[.*\\]-df68", "").trim();
